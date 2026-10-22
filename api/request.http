@@ -1,0 +1,396 @@
+@base = http://localhost:3001
+@contentType = application/json
+
+### Raíz
+GET {{base}}/
+
+### Login administrador
+# @name login
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "ana@cafeteria.test",
+  "password": "Admin123!"
+}
+
+### Login cliente
+# @name loginCliente
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "luis@cafeteria.test",
+  "password": "Cliente123!"
+}
+
+### Credenciales incorrectas
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "ana@cafeteria.test",
+  "password": "no-es-la-clave"
+}
+
+### Sin token
+GET {{base}}/api/productos
+
+### Token inválido
+GET {{base}}/api/productos
+Authorization: Bearer token-invalido
+
+### Registro de cliente
+# @name registro
+POST {{base}}/api/auth/registro
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Nora",
+  "apellido": "Diaz",
+  "email": "nora@cafeteria.test",
+  "password": "Cliente123!",
+  "perfil": "Administrador"
+}
+
+### Registro con contraseña corta
+POST {{base}}/api/auth/registro
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Nora",
+  "apellido": "Diaz",
+  "email": "corta@cafeteria.test",
+  "password": "123"
+}
+
+### Correo de registro duplicado
+POST {{base}}/api/auth/registro
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Ana",
+  "apellido": "Rojas",
+  "email": "ana@cafeteria.test",
+  "password": "Cliente123!"
+}
+
+### Cliente no lista usuarios
+GET {{base}}/api/usuarios
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Usuario sin nombre
+POST {{base}}/api/usuarios
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "apellido": "Rojas",
+  "email": "incompleto@cafeteria.test",
+  "password": "Clave123!"
+}
+
+### Crear usuario
+# @name crearUsuario
+POST {{base}}/api/usuarios
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Mia",
+  "apellido": "Cruz",
+  "email": "mia@cafeteria.test",
+  "telefono": "999000111",
+  "password": "Clave123!"
+}
+
+### Correo duplicado
+POST {{base}}/api/usuarios
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Mia",
+  "apellido": "Copia",
+  "email": "mia@cafeteria.test",
+  "password": "Clave123!"
+}
+
+### Cliente crea usuarios
+POST {{base}}/api/usuarios
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Otto",
+  "apellido": "Paz",
+  "email": "otto@cafeteria.test",
+  "password": "Clave123!"
+}
+
+### Listar usuarios
+GET {{base}}/api/usuarios
+Authorization: Bearer {{login.response.body.token}}
+
+### Ver el propio usuario
+GET {{base}}/api/usuarios/{{loginCliente.response.body.usuario.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Cliente ve a otro usuario
+GET {{base}}/api/usuarios/{{login.response.body.usuario.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Usuario inexistente
+GET {{base}}/api/usuarios/99999
+Authorization: Bearer {{login.response.body.token}}
+
+### Cliente intenta cambiar su perfil
+PUT {{base}}/api/usuarios/{{loginCliente.response.body.usuario.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Luis",
+  "apellido": "Paredes",
+  "email": "luis@cafeteria.test",
+  "perfil": "Administrador"
+}
+
+### Cliente edita a otro
+PUT {{base}}/api/usuarios/{{login.response.body.usuario.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Ana",
+  "apellido": "Rojas",
+  "email": "ana@cafeteria.test"
+}
+
+### Actualizar usuario
+PUT {{base}}/api/usuarios/{{crearUsuario.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Mia",
+  "apellido": "Cruz",
+  "email": "mia.cruz@cafeteria.test",
+  "telefono": "999000222"
+}
+
+### Administrador no se desactiva
+DELETE {{base}}/api/usuarios/{{login.response.body.usuario.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Desactivar usuario
+DELETE {{base}}/api/usuarios/{{crearUsuario.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Cliente no crea productos
+POST {{base}}/api/productos
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Té",
+  "precio": 3.5,
+  "stock": 4
+}
+
+### Producto inválido
+POST {{base}}/api/productos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "",
+  "precio": 0,
+  "stock": -1
+}
+
+### Crear producto
+# @name crearProducto
+POST {{base}}/api/productos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Jugo de naranja",
+  "precio": 6.5,
+  "stock": 5,
+  "descripcion": "Vaso de 300 ml"
+}
+
+### Listar productos
+GET {{base}}/api/productos
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Producto inexistente
+GET {{base}}/api/productos/99999
+Authorization: Bearer {{login.response.body.token}}
+
+### Actualizar producto
+PUT {{base}}/api/productos/{{crearProducto.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Jugo de naranja",
+  "precio": 7,
+  "stock": 5,
+  "descripcion": "Vaso de 300 ml"
+}
+
+### Desactivar producto
+DELETE {{base}}/api/productos/{{crearProducto.response.body.id}}
+Authorization: Bearer {{login.response.body.token}}
+
+### Pedido con cantidad inválida
+POST {{base}}/api/pedidos
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "usuarioId": {{loginCliente.response.body.usuario.id}},
+  "productoId": 1,
+  "cantidad": 0
+}
+
+### Cliente pide para otra persona
+POST {{base}}/api/pedidos
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "usuarioId": {{login.response.body.usuario.id}},
+  "productoId": 1,
+  "cantidad": 1
+}
+
+### Pedir el café de la carga
+# @name pedirCafe
+POST {{base}}/api/pedidos
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "usuarioId": {{loginCliente.response.body.usuario.id}},
+  "productoId": 1,
+  "cantidad": 1
+}
+
+### Listar los pedidos del cliente
+GET {{base}}/api/pedidos
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Cliente filtra a otro usuario
+GET {{base}}/api/pedidos?usuarioId={{login.response.body.usuario.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Administrador filtra por producto
+GET {{base}}/api/pedidos?productoId=1
+Authorization: Bearer {{login.response.body.token}}
+
+### Pedido inexistente
+GET {{base}}/api/pedidos/99999
+Authorization: Bearer {{login.response.body.token}}
+
+### Comentario vacío
+POST {{base}}/api/pedidos/{{pedirCafe.response.body.id}}/comentarios
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "texto": "   "
+}
+
+### Comentar el pedido
+POST {{base}}/api/pedidos/{{pedirCafe.response.body.id}}/comentarios
+Authorization: Bearer {{loginCliente.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "texto": "Sin azúcar"
+}
+
+### Listar comentarios
+GET {{base}}/api/pedidos/{{pedirCafe.response.body.id}}/comentarios
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Cancelar el pedido
+DELETE {{base}}/api/pedidos/{{pedirCafe.response.body.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Cancelar de nuevo
+DELETE {{base}}/api/pedidos/{{pedirCafe.response.body.id}}
+Authorization: Bearer {{loginCliente.response.body.token}}
+
+### Flujo completo
+# @name flujoLogin
+POST {{base}}/api/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "ana@cafeteria.test",
+  "password": "Admin123!"
+}
+
+### Flujo: crear producto con stock 2
+# @name flujoProducto
+POST {{base}}/api/productos
+Authorization: Bearer {{flujoLogin.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Brownie del día",
+  "precio": 4.5,
+  "stock": 2
+}
+
+### Flujo: pedir las 2 unidades
+# @name flujoPedido
+POST {{base}}/api/pedidos
+Authorization: Bearer {{flujoLogin.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "usuarioId": {{flujoLogin.response.body.usuario.id}},
+  "productoId": {{flujoProducto.response.body.id}},
+  "cantidad": 2
+}
+
+### Flujo: rechazar un pedido más
+POST {{base}}/api/pedidos
+Authorization: Bearer {{flujoLogin.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "usuarioId": {{flujoLogin.response.body.usuario.id}},
+  "productoId": {{flujoProducto.response.body.id}},
+  "cantidad": 1
+}
+
+### Flujo: comentar
+POST {{base}}/api/pedidos/{{flujoPedido.response.body.id}}/comentarios
+Authorization: Bearer {{flujoLogin.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "texto": "Para llevar"
+}
+
+### Flujo: cancelar
+DELETE {{base}}/api/pedidos/{{flujoPedido.response.body.id}}
+Authorization: Bearer {{flujoLogin.response.body.token}}
+
+### Flujo: volver a pedir las unidades liberadas
+POST {{base}}/api/pedidos
+Authorization: Bearer {{flujoLogin.response.body.token}}
+Content-Type: {{contentType}}
+
+{
+  "usuarioId": {{flujoLogin.response.body.usuario.id}},
+  "productoId": {{flujoProducto.response.body.id}},
+  "cantidad": 2
+}
